@@ -22,11 +22,11 @@ jobs:
 
     - name: Deploy files to VM
       run: |
-        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* adminuser@52.233.178.127:~/azurephp/
+        scp -i ~/.ssh/authorized_keys -o StrictHostKeyChecking=no -r ./* adminuser@52.233.178.127:~/azurephp/
 
     - name: Deploy Docker Container on VM
       run: |
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no adminuser@52.233.178.127 << 'EOF'
+        ssh -i ~/.ssh/authorized_keys -o StrictHostKeyChecking=no adminuser@52.233.178.127 << 'EOF'
         # Ensure Docker is installed
         sudo apt update && sudo apt install -y docker.io
 
