@@ -1,0 +1,46 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - main  # Runs when code is pushed to 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VM_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 52.233.178.127 >> ~/.ssh/known_hosts
+
+    - name: Deploy files to VM
+      run: |
+        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./* adminuser@52.233.178.127:~/azurephp/
+
+    - name: Deploy Docker Container on VM
+      run: |
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no adminuser@52.233.178.127 << 'EOF'
+        # Ensure Docker is installed
+        sudo apt update && sudo apt install -y docker.io
+
+        # Stop and remove old container if running
+        docker stop myphpapp || true
+        docker rm myphpapp || true
+
+        # Remove old images to free up space (optional)
+        docker rmi myphpapp:latest || true
+
+        # Navigate to project directory
+        cd ~/azurephp
+
+        # Build and run the Docker container
+        docker build -t myphpapp:latest .
+        docker run -d -p 80:80 --name myphpapp myphpapp:latest
+        EOF
