@@ -3,7 +3,7 @@ name: Deploy to Azure VM
 on:
   push:
     branches:
-      - main  # Runs when code is pushed to 'main'
+      - master  # Runs when code is pushed to 'master'
 
 jobs:
   deploy:
